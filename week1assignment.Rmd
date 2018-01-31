@@ -49,63 +49,64 @@ library(plyr)
   <h5 class='right text-uppercase'>January 30, 2018</h5>
 </div>
 
+<div class='alert alert-info'>
+  I began by reading 2 in csv files from my github page. The first contains the unaltered raw mushroom data while the second contains a lightly hand-edited version of the attribute names, abbreviations and associated values to be used with the mushroom data.
+</div>
+
 ```{r}
 mushrooms_raw <- read.csv('https://raw.githubusercontent.com/brian-cuny/607assignment1/master/agaricus-lepiota.csv', header=FALSE, stringsAsFactors=FALSE)
 names <- read.csv('https://raw.githubusercontent.com/brian-cuny/607assignment1/master/names.csv', header=FALSE, stringsAsFactors=FALSE, row.names=1, col.names=0:12)
 ```
 
-<div class='well'>
-  I began by reading 2 csv files. The first contains the unaltered raw mushroom data while the second contains a lightly edited version of the list of names and abbreviations to be used with the list.
+<div class='alert alert-info'>
+  I transformed names dataframe for easier processing and then used the column names to assign the columns of mushrooms_raw.
 </div>
 
 ```{r}
 names <- t(names)
 names(mushrooms_raw) <- colnames(names)
-head(mushrooms_raw[,1:5])
-head(names[,1:5])
+head(mushrooms_raw[,1:5], 10)
+head(names[,1:5], 10)
 ```
 
-<div class='well'>
-  I transformed names for easier processing and then used the column names to assign the columns of mushrooms_raw.
+<div class='alert alert-info'>
+  I subset the raw mushroom data by selected 'classes' and 3 other columns ('odor', 'population' and 'habitat'). I stored this subset in mushrooms_reduced and stored the columns in my_columns for future use.
 </div>
 
 ```{r}
 my_columns <- c('classes', 'odor', 'population', 'habitat')
 mushrooms_reduced <- subset(mushrooms_raw, select=my_columns)
+head(mushrooms_reduced, 10)
 ```
 
-<div class='well'>
-  I subset the data frame by selected classes and 3 other columns (odor, population and habitat). I stored this subset in mushrooms_reduced.
+<div class='alert alert-info'>
+  The below method accepts the names and mushroom_reduced data structures and the name of the column that I wish to process. It reads the names matrix and creates two vectors that contain the matching abbrevation and full names of the given class. An a to b substitution is then made and the modified data is returned.
 </div>
 
 ```{r}
 #"unlist" code adapted from "Henry" on Stackoverflow
-process_names <- function(data, to_mod, column){
-  mod_names <- strsplit(data[,column], '=')
-  mod_names[sapply(mod_names, length)==0] <- NULL
-  abbreviations <- unlist(mod_names)[2*(1:length(mod_names))]
-  full_names <- unlist(mod_names)[2*(1:length(mod_names))-1]
-  return(mapvalues(to_mod[,column], from=abbreviations, to=full_names))
+process_names <- function(names, mushrooms_reduced, column){
+  split_names <- strsplit(names[,column], '=')
+  split_names[sapply(split_names, length)==0] <- NULL
+  abbreviations <- unlist(split_names)[2*(1:length(split_names))]
+  full <- unlist(split_names)[2*(1:length(split_names))-1]
+  return(mapvalues(mushrooms_reduced[,column], from=abbreviations, to=full))
 }
 ```
 
-<div class='well'>
-  This method accepts the names and mushroom_reduced data structures and the name of the column that I wish to process. It reads the names matrix and creates two vectors that contain the matching abbrevation and full names of the given class. An a to b substitution is then made and the modified data is returned.
+<div class='alert alert-info'>
+  I looped over all the appropriate columns calling the process_names method and this will substitute the abbrevation for the full name in every entry in the data frame.
 </div>
 
 ```{r}
 for(column in my_columns){
   mushrooms_reduced[,column] <- process_names(names, mushrooms_reduced, column)
 }
-head(mushrooms_reduced)
+head(mushrooms_reduced, 10)
 ```
 
-<div class='well'>
-  I loop over all the appropriate columns calling the method and this will substitute the abbrevation for the full name in every entry in the data frame.
-</div>
-
-<div class='alert alert-info'>
-  In conclusion, the original mushrooms data has been read in, subset and updated with more readable information and is ready for further processing.
+<div class='alert alert-success'>
+  In conclusion, the original mushrooms data has been read in, subset and updated with more readable information and is ready to be saved or processed further.
 </div>
 
 
